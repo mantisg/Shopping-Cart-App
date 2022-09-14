@@ -7,43 +7,52 @@ import data from './data';
 function App() {
     const [cartItems, setCartItems] = useState([]);
     const {products: items} = data;
-    const getItem = item => cartItems.find(x => x.id === item.id)
-    const saveCart = (item, shouldAdd) => {
-    	const newCartItems = createCart(item, shouldAdd)
-		localStorage.setItem('cartItems', JSON.stringify(newCartItems));
-		setCartItems(newCartItems);
-	}
-	const createCart = (item, shouldAdd) => {
-		const exist = getItem(item);
-		if (shouldAdd && exist) {
-			return cartItems.map((x) =>
-                x.id === item.id ? {...exist, qty: exist.qty + 1} : x
-            );
-		} else if (shouldAdd && !exist) {
-			return [...cartItems, {...item, qty: 1}]
-		} else if (!shouldAdd && exist.qty === 1) {
-			return cartItems.filter((x) => x.id !== item.id)
-		} else {
-			return cartItems.map((x) =>
-                x.id === item.id ? {...exist, qty: exist.qty - 1} : x
-            )
-		}
-	}
+
+    const addNewItemToCart = item => [...cartItems, {...item, qty: 1}]
+    const removeItemFromCart = item => cartItems.filter(i => i.id !== item.id)
+
+    const updatedCartQuantity = (item, shouldAdd) => {
+        const newItem = {
+            ...item,
+            qty: shouldAdd ? item.qty + 1 : item.qty - 1,
+        }
+        return cartItems.map((x) =>
+            x.id === item.id ? newItem : x
+        );
+    }
+
+    const isItemInCart = item => cartItems.find(x => x.id === item.id)
+    const createCart = (item, shouldAdd) => {
+        const itemInCart = isItemInCart(item);
+        if (shouldAdd && !itemInCart) {
+            return addNewItemToCart(item)
+        } else if (!shouldAdd && item.qty === 1) {
+            return removeItemFromCart(item)
+        } else {
+            return updatedCartQuantity(item, shouldAdd)
+        }
+    }
+
+    const updateCart = (item, shouldAdd) => {
+        const newCartItems = createCart(item, shouldAdd)
+        localStorage.setItem('cartItems', JSON.stringify(newCartItems));
+        setCartItems(newCartItems);
+    }
 
     const onAdd = (item) => {
-    	const shouldAdd = true
-    	saveCart(item, shouldAdd)
+        const shouldAdd = true
+        updateCart(item, shouldAdd)
     }
     const onRemove = (item) => {
         const shouldAdd = false
-        saveCart(item, shouldAdd)
+        updateCart(item, shouldAdd)
     }
 
     useEffect(() => {
-    	setCartItems(localStorage.getItem('cartItems')
-    		? JSON.parse(localStorage.getItem('cartItems'))
-    		: []
-    	);
+        setCartItems(localStorage.getItem('cartItems')
+            ? JSON.parse(localStorage.getItem('cartItems'))
+            : []
+        );
     }, []);
     return (
         <div>
