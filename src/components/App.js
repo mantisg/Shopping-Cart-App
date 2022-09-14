@@ -1,7 +1,6 @@
 import {useEffect, useState} from 'react';
-import Header from './Header';
+import SiteHeader from './SiteHeader';
 import Main from './Main';
-import Basket from './Basket';
 import {data} from '../data';
 
 function App() {
@@ -11,7 +10,6 @@ function App() {
     const removeItemFromCart = item => basket.filter(i => i.id !== item.id)
 
     const updatedCartQuantity = (item, shouldAdd) => {
-        console.log(item)
         const newItem = {
             ...item,
             qty: shouldAdd ? item.qty + 1 : item.qty - 1,
@@ -46,13 +44,10 @@ function App() {
         );
     }, []);
     return (
-        <div>
-            <Header countCartItems={basket.reduce((acc, i) => acc + i.qty, 0)} />
-            <div className='row'>
-                <Main basket={basket} onClick={onClick} items={data.items} />
-                <Basket basket={basket} onClick={onClick} />
-            </div>
-        </div>
+        <>
+            <SiteHeader countCartItems={basket.reduce((acc, i) => acc + i.qty, 0)} />
+            <Main items={data.items} basket={basket} onClick={onClick} />
+        </>
     );
 }
 
