@@ -4,43 +4,40 @@ import Main from './components/Main';
 import Basket from './components/Basket';
 import data from './data';
 
-function Save(newCartItems) {
-	const savedCartItems = newCartItems;
-	localStorage.setItem('cartItems', JSON.stringify(savedCartItems));
-}
-
 function App() {
     const [cartItems, setCartItems] = useState([]);
-    const {products} = data;
-    const onAdd = (product) => {
-        const exist = cartItems.find((x) => x.id === product.id);
-        if (exist) {
-            const newCartItems = cartItems.map((x) =>
-                x.id === product.id ? {...exist, qty: exist.qty + 1} : x
+    const {products: items} = data;
+    const getItem = item => cartItems.find(x => x.id === item.id)
+    const saveCart = (item, shouldAdd) => {
+    	const newCartItems = createCart(item, shouldAdd)
+		localStorage.setItem('cartItems', JSON.stringify(newCartItems));
+		setCartItems(newCartItems);
+	}
+	const createCart = (item, shouldAdd) => {
+		const exist = getItem(item);
+		if (shouldAdd && exist) {
+			return cartItems.map((x) =>
+                x.id === item.id ? {...exist, qty: exist.qty + 1} : x
             );
+		} else if (shouldAdd && !exist) {
+			return [...cartItems, {...item, qty: 1}]
+		} else if (!shouldAdd && exist.qty === 1) {
+			return cartItems.filter((x) => x.id !== item.id)
+		} else {
+			return cartItems.map((x) =>
+                x.id === item.id ? {...exist, qty: exist.qty - 1} : x
+            )
+		}
+	}
 
-            setCartItems(newCartItems);
-            Save(newCartItems);
-        } else {
-            const newCartItems = [...cartItems, {...product, qty: 1}];
-            setCartItems(newCartItems);
-            Save(newCartItems);
-        }
+    const onAdd = (item) => {
+    	const shouldAdd = true
+    	saveCart(item, shouldAdd)
     }
-    const onRemove = (product) => {
-        const exist = cartItems.find((x) => x.id === product.id);
-        if (exist.qty === 1) {
-            const newCartItems = cartItems.filter((x) => x.id !== product.id);
-            setCartItems(newCartItems)
-            Save(newCartItems);
-        } else {
-            const newCartItems = cartItems.map((x) =>
-                x.id === product.id ? {...exist, qty: exist.qty - 1} : x
-            );
-            setCartItems(newCartItems);
-            Save(newCartItems);
-        }
-    };
+    const onRemove = (item) => {
+        const shouldAdd = false
+        saveCart(item, shouldAdd)
+    }
 
     useEffect(() => {
     	setCartItems(localStorage.getItem('cartItems')
@@ -52,7 +49,7 @@ function App() {
         <div>
             <Header countCartItems={cartItems.reduce((acc, i) => acc + i.qty, 0)} />
             <div className='row'>
-                <Main cartItems={cartItems} onAdd={onAdd} onRemove={onRemove} products={products} />
+                <Main cartItems={cartItems} onAdd={onAdd} onRemove={onRemove} products={items} />
                 <Basket cartItems={cartItems} onAdd={onAdd} onRemove={onRemove} />
             </div>
         </div>
