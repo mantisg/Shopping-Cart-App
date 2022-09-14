@@ -7,24 +7,8 @@ import data from './data';
 function App() {
     const [cartItems, setCartItems] = useState([]);
     const {products: items} = data;
-    const getItem = item => cartItems.find(x => x.id === item.id)
-    const saveCart = (item, shouldAdd) => {
-        const newCartItems = createCart(item, shouldAdd)
-        localStorage.setItem('cartItems', JSON.stringify(newCartItems));
-        setCartItems(newCartItems);
-    }
-    const createCart = (item, shouldAdd) => {
-        const exist = getItem(item);
-        if (shouldAdd && !exist) {
-            return addItemToCart(item)
-        } else if (!shouldAdd && exist.qty === 1) {
-            return removeItemFromCart(item)
-        } else {
-            return updatedCartQuantity(item, shouldAdd)
-        }
-    }
 
-    const addItemToCart = item => [...cartItems, {...item, qty: 1}]
+    const addNewItemToCart = item => [...cartItems, {...item, qty: 1}]
     const removeItemFromCart = item => cartItems.filter(i => i.id !== item.id)
 
     const updatedCartQuantity = (item, shouldAdd) => {
@@ -37,13 +21,31 @@ function App() {
         );
     }
 
+    const isItemInCart = item => cartItems.find(x => x.id === item.id)
+    const createCart = (item, shouldAdd) => {
+        const itemInCart = isItemInCart(item);
+        if (shouldAdd && !itemInCart) {
+            return addNewItemToCart(item)
+        } else if (!shouldAdd && item.qty === 1) {
+            return removeItemFromCart(item)
+        } else {
+            return updatedCartQuantity(item, shouldAdd)
+        }
+    }
+
+    const updateCart = (item, shouldAdd) => {
+        const newCartItems = createCart(item, shouldAdd)
+        localStorage.setItem('cartItems', JSON.stringify(newCartItems));
+        setCartItems(newCartItems);
+    }
+
     const onAdd = (item) => {
         const shouldAdd = true
-        saveCart(item, shouldAdd)
+        updateCart(item, shouldAdd)
     }
     const onRemove = (item) => {
         const shouldAdd = false
-        saveCart(item, shouldAdd)
+        updateCart(item, shouldAdd)
     }
 
     useEffect(() => {
