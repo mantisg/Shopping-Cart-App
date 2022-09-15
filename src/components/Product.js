@@ -12,7 +12,7 @@ export default function Product(props) {
                         <button onClick={() => onClick(itemInCart)} className="remove">
                             -
 						</button>
-                        <span className="p-1">{product.qty}</span>
+                        <span className="p-1">{itemInCart.qty}</span>
                         <button onClick={() => onClick(itemInCart, true)} className="add">
                             +
 						</button>
